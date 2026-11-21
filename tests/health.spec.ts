@@ -4,6 +4,7 @@ import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module.js';
+import { configureApp } from '../src/app.config.js';
 import { HealthService } from '../src/health/health.service.js';
 
 describe('HealthService', () => {
@@ -19,12 +20,9 @@ describe('HTTP health route', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
+    configureApp(app);
     await app.init();
   });
 
@@ -35,14 +33,11 @@ describe('HTTP health route', () => {
   it('returns GET /api/health', async () => {
     const response = await request(app.getHttpServer()).get('/api/health');
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({
-      status: 'ok',
-      service: 'videoclub-api-nestjs-ts',
-    });
+    expect(response.body).toEqual({ status: 'ok', service: 'videoclub-api-nestjs-ts' });
   });
 
-  it('returns 404 for routes not implemented yet', async () => {
-    const response = await request(app.getHttpServer()).get('/api/customers');
+  it('returns 404 for games, which are not implemented yet', async () => {
+    const response = await request(app.getHttpServer()).get('/api/games');
     expect(response.status).toBe(404);
   });
 });
