@@ -1,12 +1,10 @@
 # VideoClub API — NestJS + TypeScript
 
-Proyecto de aprendizaje incremental con **NestJS 12, TypeScript y Node.js**, enfocado en módulos, controladores, proveedores e inyección de dependencias.
+Proyecto de aprendizaje por etapas basado en el diagrama UML de VideoClub. Implementa las **cinco operaciones de clientes** mediante un módulo NestJS, sin base de datos por ahora. Los datos se almacenan **en memoria** y desaparecen al reiniciar la aplicación.
 
-**Estado actual:** únicamente se implementó la base del proyecto y `GET /api/health`. Todavía no incluye operaciones de clientes, juegos, base de datos ni alquileres. Las mejoras están organizadas en los [Issues de GitHub](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues).
+## Ejecutar
 
-## Ejecución
-
-Recomendado: Node.js 24.
+Con Node.js 24 y npm:
 
 ```bash
 npm install
@@ -16,14 +14,30 @@ npm run typecheck
 npm run build
 ```
 
-El endpoint `GET /api/health` devuelve un JSON de estado. La primera versión no requiere credenciales ni base de datos.
+## Métodos implementados
 
-## Plan de desarrollo
+| Operación | Ruta |
+| --- | --- |
+| Agregar cliente | `POST /api/customers` |
+| Modificar cliente | `PUT /api/customers/:id` |
+| Eliminar cliente | `DELETE /api/customers/:id` |
+| Mostrar y filtrar clientes | `GET /api/customers?name=ana&documentId=abc` |
+| Buscar por ID | `GET /api/customers/:id` |
 
-1. Clientes: alta, edición, eliminación, listado y búsqueda.
-2. Juegos: alta y edición, con validaciones.
-3. PostgreSQL con migraciones y repositorios inyectables.
-4. Alquileres, devoluciones y reglas de disponibilidad.
-5. Swagger, Docker, CI y documentación técnica.
+El alta exige `name` y permite `documentId`, `phone` y `email`. Validamos con DTO y `ValidationPipe`. Los filtros no distinguen mayúsculas de minúsculas. Respuestas: 201 al crear, 200 al consultar/actualizar, 204 al eliminar, 400 si la entrada es inválida y 404 si no existe.
 
-Esta versión complementará la API Express, demostrando una arquitectura dirigida por NestJS y casos de negocio gradualmente más complejos.
+`PUT` reemplaza todo el registro; los datos opcionales omitidos se eliminan. Los IDs se generan en memoria y no son persistentes.
+
+## Arquitectura
+
+`CustomersModule` contiene el controlador HTTP, un servicio con reglas de aplicación y un repositorio inyectable mediante token, preparado para cambiarse por una implementación de PostgreSQL sin reescribir las rutas.
+
+Hay pruebas unitarias de servicio y pruebas HTTP con Vitest, Supertest y `@nestjs/testing`.
+
+## Próximos pasos
+
+- [GamesModule](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/2): agregar y modificar juegos.
+- [PostgreSQL](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/3): repositorios persistentes y migraciones.
+- [Alquileres](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/4): disponibilidad y devoluciones.
+
+Relacionado con el [issue #1 de Customers](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/1).

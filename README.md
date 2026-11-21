@@ -1,54 +1,63 @@
 # VideoClub API — NestJS + TypeScript
 
-An **incremental backend learning project** built with NestJS 12, TypeScript and Node.js. It uses the same [VideoClub UML learning domain](https://github.com/samantonio91/videoClub) as the [Express version](https://github.com/samantonio91/videoclub-api-express-ts), but emphasizes NestJS modules, controllers, providers, dependency injection and testable business rules.
+An **incremental backend learning project** built with NestJS 12, TypeScript and Node.js. It uses the same [VideoClub UML learning domain](https://github.com/samantonio91/videoClub) as the [Express version](https://github.com/samantonio91/videoclub-api-express-ts), but focuses on NestJS modules, dependency injection, validation and domain rules.
 
-**Current phase: foundation only.** The implemented endpoint is `GET /api/health`. Customer and game operations, persistence and rentals are planned in [GitHub Issues](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues); they do not exist yet. This repository is **not production-ready**.
+**Current phase: CustomersModule implemented** (five customer operations), plus `GET /api/health`. Persistence is currently **in memory** and all data is lost on restart. Games, rentals and payments are not implemented, and this is not a production-ready system.
 
-## Tech stack
+## Development
 
-- Node.js 24 recommended
-- NestJS 12, TypeScript 6, ES modules
-- Vitest + Supertest for automated tests
-- Layered modules with injectable providers
-
-## Run
+Requires Node.js 24 (recommended) and npm.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Check `http://localhost:3000/api/health`:
-
-```json
-{"status":"ok","service":"videoclub-api-nestjs-ts"}
-```
-
-Run checks:
+Validation and automated checks:
 
 ```bash
 npm run typecheck
 npm test
 npm run build
-npm start
 ```
 
-No database or credentials are needed for this foundation. All source imports use explicit `.js` extensions to match native ESM output. Do not commit an actual `.env`.
+## Available endpoints
 
-## Planned stages
+| UML operation | HTTP | Route |
+| --- | --- | --- |
+| AgregarCliente | POST | `/api/customers` |
+| ModificarCliente | PUT | `/api/customers/:id` |
+| EliminarCliente | DELETE | `/api/customers/:id` |
+| MostrarClientes | GET | `/api/customers?name=ana&documentId=abc` |
+| BuscarCliente | GET | `/api/customers/:id` |
+| Health | GET | `/api/health` |
 
-1. **Customers module:** create, update, delete, list/filter and find by ID — [issue #1](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/1)
-2. **Games module:** create and update, Product/Game model — [issue #2](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/2)
-3. **PostgreSQL persistence:** injectable repositories and migrations — [issue #3](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/3)
-4. **Rentals and returns:** domain rules, availability, concurrency protection — [issue #4](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/4)
-5. **Portfolio quality:** Swagger/OpenAPI, Docker and security review — [issue #5](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/5)
+**POST example**
 
-## Learning comparison
+```bash
+curl -X POST http://localhost:3000/api/customers \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Ana Garcia","documentId":"ABC-123","phone":"5551234","email":"ana@example.com"}'
+```
 
-- **Java Spring Boot:** JPA and familiar layered Java enterprise patterns.
-- **Express + TypeScript:** manual composition of controllers, services and repository interfaces.
-- **NestJS + TypeScript:** framework-managed modules, providers and dependency injection, with progressively richer domain behavior.
+The response includes a generated numeric `id`. `PUT` replaces the **whole** customer record; omitted optional properties are cleared. Deleting returns HTTP 204. Missing records return HTTP 404, and invalid body/query/id parameters return HTTP 400.
 
-This repository has genuine milestones and pull requests; no artificial commit history or fake development dates.
+Both `name` and `documentId` can filter the customer list using case-insensitive partial matches.
 
-Español: [README.es.md](README.es.md).
+## NestJS design
+
+- `CustomersModule` registers controller, service and repository provider.
+- `CustomersController` exposes REST routes and delegates to `CustomersService`.
+- Request DTO classes are validated by a globally configured `ValidationPipe` using `class-validator` and `class-transformer`.
+- The service receives a repository through the `CUSTOMERS_REPOSITORY` injection token.
+- The in-memory repository is replaceable by a persistent adapter in the [PostgreSQL issue](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/3).
+- Tests cover service behavior and HTTP behavior with `@nestjs/testing`, Vitest and Supertest.
+
+## Next issues
+
+1. [GamesModule (issue #2)](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/2).
+2. [PostgreSQL with migrations (issue #3)](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/3).
+3. [Rental workflow and availability (issue #4)](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/4).
+4. [OpenAPI, Docker and security (issue #5)](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/5).
+
+This implementation belongs to [CustomersModule issue #1](https://github.com/samantonio91/videoclub-api-nestjs-ts/issues/1). Read the [Spanish README](README.es.md).

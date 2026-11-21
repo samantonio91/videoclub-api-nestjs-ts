@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import { configureApp } from './app.config.js';
 import { AppModule } from './app.module.js';
 
 async function bootstrap(): Promise<void> {
@@ -9,7 +10,7 @@ async function bootstrap(): Promise<void> {
   }
 
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  configureApp(app);
   await app.listen(port);
 }
 
